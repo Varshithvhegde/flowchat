@@ -1385,13 +1385,19 @@ function renderAppPage(options: {
         '.prompt-area':'var(--surface-0, #080d20)',
       };
       function lockShellBg() {
+        // Lock shell elements
         for (const [sel, bg] of Object.entries(SHELL_BG)) {
           const el = document.querySelector(sel);
-          if (el) el.style.setProperty('background', bg, 'important');
+          if (el) {
+            el.style.setProperty('background', bg, 'important');
+            el.style.setProperty('background-image', 'none', 'important');
+          }
         }
+        // Nuke any background set on body — backgrounds belong in #fc-bg-layer only
+        document.body.style.setProperty('background-image', 'none', 'important');
+        document.body.style.setProperty('background-color', 'var(--bg, #06091a)', 'important');
       }
       lockShellBg();
-      // Re-lock after any DOM change (catches style marker injections)
       new MutationObserver(lockShellBg).observe(document.head, { childList: true, subtree: true });
     </script>
     <script>${renderClientRuntime(options.chatId, options.clientId, options.clientSecret, options.history, options.connect ?? true, options.interceptSubmits ?? false, replay)}</script>
