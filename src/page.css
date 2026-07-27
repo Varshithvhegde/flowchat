@@ -63,26 +63,30 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ─── Page background layer (behind entire app) ───────────────────────── */
+/* ─── Chat viewport background layer ─────────────────────────────────── */
+/* Lives inside #chat-viewport so it only covers the chat area, never
+   the sidebar, topbar, or prompt bar */
+.chat-viewport {
+  position: relative;   /* establishes stacking context for #fc-bg-layer */
+}
+
 #fc-bg-layer {
-  position: fixed;
+  position: absolute;
   inset: 0;
   z-index: 0;
-  pointer-events: none !important;  /* never intercept clicks */
+  pointer-events: none !important;
   overflow: hidden;
   isolation: isolate;
 }
 
-/* Everything inside bg layer also non-interactive */
 #fc-bg-layer * {
   pointer-events: none !important;
 }
 
-/* Convenience: model can use #fc-page-bg as a named inner container */
-#fc-page-bg {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
+/* .chat sits above the background */
+.chat {
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── App shell ───────────────────────────────────────────────────────── */

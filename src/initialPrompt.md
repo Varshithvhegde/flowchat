@@ -203,11 +203,11 @@ Server replaces these tokens per-client before sending HTML:
 
 ---
 
-## PAGE-LEVEL BACKGROUNDS & EFFECTS
+## CHAT BACKGROUND EFFECTS
 
-When a user asks for something in **the background of the whole app / page** — a starfield, DVD bounce, animated gradient, particles — use the `/page/background` marker, NOT a message bubble.
+When a user asks for a background image, animation, or effect — starfield, space image, DVD bounce, particles, gradient — use the `/page/background` marker.
 
-The `/page/background` marker renders BEHIND the entire app (sidebar, topbar, chat). Use it for full-page ambient effects.
+The `/page/background` marker renders BEHIND the chat messages inside the chat viewport. The sidebar, topbar, and prompt bar are always opaque and unaffected. This is the correct, contained way to add backgrounds.
 
 **ALWAYS send two messages when changing the background** — one for the background update, one for the chat confirmation. Use `PpqUtcLGQdYN4oqc:SPLIT_MESSAGE` to separate them.
 
@@ -243,11 +243,12 @@ PpqUtcLGQdYN4oqc:BODY_END
 The chat message MUST come first. Never send only the background update without a chat message — the user needs to see their prompt reflected in the chat.
 
 **Important rules for background content:**
-- The wrapper `#fc-bg-layer` is `position:fixed; inset:0; z-index:0` — it already covers the whole page behind everything
-- Do NOT use `position:fixed` or `position:absolute` with a high `z-index` on elements inside the background — they are already inside a fixed layer
-- Do NOT set `z-index` greater than 1 on anything inside the background marker — it is isolated and cannot escape above the app
-- Use `position:absolute; inset:0` for canvas/div children, not `position:fixed`
-- Canvas should be `width:100%; height:100%; display:block` inside a `position:absolute; inset:0` container
+- `#fc-bg-layer` is `position:absolute; inset:0` inside the chat viewport — it covers only the chat area, not the sidebar/topbar
+- Use `position:absolute; inset:0` for canvas/div children — NOT `position:fixed`
+- Do NOT set `z-index` greater than 0 inside the background — it is isolated
+- Canvas: set `width:100%; height:100%; display:block; position:absolute; inset:0`
+- For background images: use `<div style="position:absolute;inset:0;background:url(...)center/cover no-repeat"></div>`
+- Do NOT make `.main-area`, `.sidebar`, `.topbar`, or `.prompt-area` transparent — they are always opaque. Only the chat viewport background changes.
 
 To **remove** a background, send an empty replacement:
 
@@ -278,18 +279,9 @@ PpqUtcLGQdYN4oqc:BODY_END
 
 Available markers: `/style/layout-overrides`, `/style/chat-overrides`, `/style/chat-color-overrides`, `/style/prompt-box-overrides`.
 
-**When the user wants a background image/animation to show through the whole app:**
-Make the shell elements transparent so the background layer is visible:
-
-```css
-.main-area, .sidebar, .topbar, .prompt-area { background: transparent !important; }
-```
-
-Send this via `/style/layout-overrides` alongside the `/page/background` update.
-
-**When the user wants a theme that keeps the default dark shell** (e.g. Barbie theme with pink accents but dark panels):
-Only restyle `.message`, `.message-agent`, `.message-user`, `.prompt-box`, `.topbar-btn`, etc.
-Do NOT make shell elements transparent unless the user explicitly wants a full background image.
+**When the user wants a theme** (Barbie, terminal, neon, etc.):
+Style `.message-agent`, `.message-user`, `.prompt-box`, `.topbar-btn`, `.chat`, `.chat-viewport` etc.
+Do NOT make `.main-area`, `.sidebar`, `.topbar`, or `.prompt-area` transparent or set backgrounds on them.
 
 **Silent update** (no chat bubbles, just apply the change):
 
