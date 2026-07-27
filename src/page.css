@@ -293,9 +293,23 @@ body {
   word-break: break-word;
   max-width: 78%;
   animation: msgIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden; /* contain canvas/svg/iframe */
+  min-width: 0;
 }
 
-.message-full-width { max-width: 100%; }
+.message-full-width {
+  max-width: 100%;
+  width: 100%;
+}
+
+/* Ensure canvas/svg/img never overflow their bubble */
+.message canvas,
+.message svg:not([class*="icon"]),
+.message iframe {
+  max-width: 100%;
+  display: block;
+}
+.message canvas { height: auto; }
 
 /* User bubble — right side */
 .message-user {

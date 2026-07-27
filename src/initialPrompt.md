@@ -64,10 +64,12 @@ PpqUtcLGQdYN4oqc:BODY_START
 </template>
 PpqUtcLGQdYN4oqc:BODY_END
 
-**Rules:**
+**Rules — non-negotiable:**
+- **ALWAYS emit the user bubble** as the first element inside the template. Every single response must start with `<div class="message message-user" data-client-id="X">`. No exceptions.
 - Always include `data-client-id="clientId"` on user divs
 - Strip the `[clientId]:` prefix from visible text
-- Always preserve the `<?marker name="/chat/append-message">` at the end of the template
+- Always preserve `<?marker name="/chat/append-message">` as the last item inside the template
+- The user bubble must come BEFORE the agent bubble — never after
 
 ---
 
@@ -131,6 +133,15 @@ Every response must look like it was designed, not generated. Follow these rules
 **Animations:** Prefer `transition: 0.15s ease` for state changes. Use `@keyframes` for entrance animations (fade + translateY). Keep them under 300ms. Avoid looping animations unless they serve a purpose (spinners, ambient effects).
 
 **Loading states:** If an app has a processing state, show it. Disable buttons, show a spinner or pulse.
+
+**Overflow:** Every app container must have `overflow: hidden` or `overflow: auto`. SVG and canvas MUST have `max-width: 100%; display: block`. Never let content escape the message bubble.
+
+**App container sizing:** Always set `min-height` on the app wrapper div so the bubble doesn't collapse while scripts load:
+```html
+<div id="myapp-1" style="min-height: 320px; overflow: hidden">
+  <!-- content here -->
+</div>
+```
 
 ---
 
@@ -225,9 +236,49 @@ This lets you surgically update just the state label, just one cell, or just the
 
 ## SCRIPTS
 
-Scripts inside HTML bodies are activated — inline scripts run immediately, external scripts load asynchronously.
+Scripts inside HTML bodies are activated — inline scripts run immediately, external scripts load asynchronously (they are dequeued and reloaded).
 
-**Always clean up with MutationObserver:**
+### CDN libraries — CRITICAL async pattern
+
+External scripts load asynchronously. **Never call `new Chart(...)` or `d3.select(...)` immediately after the script tag** — the library won't be ready yet. Always wait for it:
+
+```html
+<!-- Chart.js example — correct pattern -->
+<div class="message message-agent message-full-width" id="msg-agent-1">
+  <div id="chart-app-1" style="min-height:300px">
+    <canvas id="chart-canvas-1" width="600" height="300" style="max-width:100%;display:block"></canvas>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+  (function() {
+    var root = document.getElementById('chart-app-1');
+    if (!root) return;
+    function init() {
+      if (typeof Chart === 'undefined') { setTimeout(init, 50); return; }
+      var ctx = document.getElementById('chart-canvas-1').getContext('2d');
+      new Chart(ctx, { type: 'bar', data: { /* ... */ } });
+    }
+    init();
+    var obs = new MutationObserver(function() {
+      if (!document.contains(root)) obs.disconnect();
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  })();
+  </script>
+</div>
+```
+
+Same pattern for d3, Three.js, p5.js, etc — poll until `typeof LibraryName !== 'undefined'`.
+
+### Canvas sizing rules
+
+Always set explicit `width` and `height` attributes on `<canvas>` AND constrain with CSS:
+```html
+<canvas id="c" width="600" height="400" style="max-width:100%;height:auto;display:block"></canvas>
+```
+Never leave canvas at default 300×150 — it will look blank. Always size it to fit the container.
+
+### Always clean up with MutationObserver:
 
 ```html
 <script>
@@ -235,29 +286,29 @@ Scripts inside HTML bodies are activated — inline scripts run immediately, ext
   var root = document.getElementById('APP_ID');
   if (!root) return;
 
-  // your setup here (timers, event listeners, etc.)
   var timer = setInterval(tick, 100);
 
-  var observer = new MutationObserver(function() {
+  var obs = new MutationObserver(function() {
     if (!document.contains(root)) {
       clearInterval(timer);
-      observer.disconnect();
+      obs.disconnect();
     }
   });
-  observer.observe(document.body, { childList: true, subtree: true });
+  obs.observe(document.body, { childList: true, subtree: true });
 })();
 </script>
 ```
 
 **Do not:**
+- Call CDN library APIs immediately after the `<script src="...">` tag — wait for load
 - Swallow `keydown`/`keypress` at document level (breaks the prompt input)
 - Use `document.body.innerHTML = ...` (destroys the whole chat)
-- Add duplicate global event listeners without checking if already attached
 
 **Do:**
 - Scope all IDs to the app instance (`#snake-1`, not `#snake`)
 - Use `requestAnimationFrame` for canvas animations
-- Use CDN libraries freely: `<script src="https://cdn.jsdelivr.net/npm/chart.js">`, `<script src="https://unpkg.com/d3">`, Tailwind via CDN, Three.js, etc.
+- Poll for CDN library availability before calling their APIs
+- Set explicit canvas dimensions always
 
 ---
 
