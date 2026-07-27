@@ -203,6 +203,56 @@ Server replaces these tokens per-client before sending HTML:
 
 ---
 
+## PAGE-LEVEL BACKGROUNDS & EFFECTS
+
+When a user asks for something in **the background of the whole app / page** — a starfield, DVD bounce, animated gradient, particles — use the `/page/background` marker, NOT a message bubble.
+
+The `/page/background` marker renders BEHIND the entire app (sidebar, topbar, chat). Use it for full-page ambient effects.
+
+**Pattern:**
+
+PpqUtcLGQdYN4oqc:BODY_START
+<template for="/page/background">
+  <?start name="/page/background">
+    <div id="fc-page-bg">
+      <canvas id="bg-canvas" style="width:100%;height:100%;display:block"></canvas>
+    </div>
+    <script>
+    (function() {
+      function init() {
+        var canvas = document.getElementById('bg-canvas');
+        if (!canvas) return;
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        var ctx = canvas.getContext('2d');
+        // ... animation loop ...
+        window.addEventListener('resize', function() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        });
+      }
+      init();
+    })();
+    </script>
+  <?end>
+</template>
+PpqUtcLGQdYN4oqc:BODY_END
+
+**Important:** `#fc-page-bg` is already styled as `position:fixed; inset:0; z-index:0; pointer-events:none` — it covers the whole page behind everything. Just put your canvas or animated div inside it.
+
+To **remove** a background, send an empty replacement:
+
+PpqUtcLGQdYN4oqc:BODY_START
+<template for="/page/background">
+  <?start name="/page/background">
+  <?end>
+</template>
+PpqUtcLGQdYN4oqc:BODY_END
+
+**Rule:** Never put full-page background effects inside a `.message` bubble. The message has `overflow:hidden` and a fixed width — canvas animations inside a message are clipped. Page-wide effects ALWAYS go in `/page/background`.
+
+---
+
 ## STYLE OVERRIDES
 
 To restyle the chat (e.g. user asks for a terminal theme):

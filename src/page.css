@@ -65,11 +65,22 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ─── Page background layer (behind entire app) ───────────────────────── */
+#fc-page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
 /* ─── App shell ───────────────────────────────────────────────────────── */
 .app-shell {
   display: flex;
   width: 100%;
   min-height: 100dvh;
+  position: relative;
+  z-index: 1;
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */

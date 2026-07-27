@@ -4,6 +4,9 @@
 <?marker name="/style/prompt-box-overrides">
 <?marker name="/layout/before">
 
+<?start name="/page/background">
+<?end>
+
 <div class="chat-viewport" id="chat-viewport">
   <div class="chat" id="chat-messages">
     <?marker name="/chat/before">
@@ -72,10 +75,6 @@
   var typingEl = null;
   var clientIdVal = form ? form.elements.namedItem('clientId')?.value : '0';
 
-  function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
   function getChat() { return document.getElementById('chat-messages'); }
 
   function scrollBottom() {
@@ -102,8 +101,6 @@
     if (old) old.remove();
   }
 
-  // Hide typing indicator when AI response arrives
-  var _origDispatch = null;
   var dispatchInterceptInstalled = false;
   function installDispatchIntercept() {
     if (dispatchInterceptInstalled || !window.partialupdates) return;
@@ -115,15 +112,6 @@
     };
   }
 
-  // Also intercept iframe load (fires when 204 comes back = server accepted)
-  var iframe = document.getElementById('hidden-submit-frame');
-  if (iframe) {
-    iframe.addEventListener('load', function() {
-      // Server got it — now just wait for WS to bring back result
-      // typing indicator stays until dispatch fires
-    });
-  }
-
   if (form) {
     form.addEventListener('submit', function(e) {
       var ta = document.getElementById('prompt-textarea');
@@ -131,17 +119,14 @@
       var text = ta.value.trim();
       if (!text) { e.preventDefault(); return; }
 
-      // Fix any relative action URLs (LLM might write c/ instead of /c/)
       var action = form.getAttribute('action') || '';
       if (action && !action.startsWith('/') && !action.startsWith('http')) {
         form.setAttribute('action', '/' + action);
       }
 
-      // Hide welcome
       var welcome = document.getElementById('chat-welcome');
       if (welcome) welcome.style.display = 'none';
 
-      // Optimistic user bubble
       var chat = getChat();
       if (chat) {
         var bubble = document.createElement('div');
@@ -150,7 +135,6 @@
         bubble.textContent = text;
         bubble.id = 'fc-optimistic-' + Date.now();
 
-        // Insert before the /chat/append-message marker
         var marker = null;
         var walker = document.createTreeWalker(chat, NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_PROCESSING_INSTRUCTION);
         while (walker.nextNode()) {
@@ -168,16 +152,9 @@
         scrollBottom();
       }
 
-      // Show typing indicator
       setTimeout(showTyping, 80);
-
-      // Defer clear so browser collects form data before we wipe the textarea
       setTimeout(function() { ta.value = ''; ta.style.height = ''; }, 0);
-
-      // Install intercept for when the WS response arrives
       setTimeout(function() { installDispatchIntercept(); }, 200);
-
-      // Safety: if no response in 30s, remove typing
       setTimeout(function() { hideTyping(); }, 30000);
     });
   }
