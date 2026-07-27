@@ -209,34 +209,38 @@ When a user asks for something in **the background of the whole app / page** —
 
 The `/page/background` marker renders BEHIND the entire app (sidebar, topbar, chat). Use it for full-page ambient effects.
 
-**Pattern:**
+**ALWAYS send two messages when changing the background** — one for the background update, one for the chat confirmation. Use `PpqUtcLGQdYN4oqc:SPLIT_MESSAGE` to separate them.
 
+For `[1]:Add a starfield background`:
+
+PpqUtcLGQdYN4oqc:BODY_START
+<template for="/chat/append-message">
+  <div class="message message-user" data-client-id="1">Add a starfield background</div>
+  <div class="message message-agent">Starfield added to the background ✦</div>
+  <?marker name="/chat/append-message">
+</template>
+PpqUtcLGQdYN4oqc:BODY_END
+PpqUtcLGQdYN4oqc:SPLIT_MESSAGE
 PpqUtcLGQdYN4oqc:BODY_START
 <template for="/page/background">
   <?start name="/page/background">
-    <div id="fc-page-bg">
-      <canvas id="bg-canvas" style="width:100%;height:100%;display:block"></canvas>
-    </div>
+    <canvas id="bg-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
     <script>
     (function() {
-      function init() {
-        var canvas = document.getElementById('bg-canvas');
-        if (!canvas) return;
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        var ctx = canvas.getContext('2d');
-        // ... animation loop ...
-        window.addEventListener('resize', function() {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-        });
-      }
-      init();
+      var canvas = document.getElementById('bg-canvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+      resize();
+      window.addEventListener('resize', resize);
+      // ... animation ...
     })();
     </script>
   <?end>
 </template>
 PpqUtcLGQdYN4oqc:BODY_END
+
+The chat message MUST come first. Never send only the background update without a chat message — the user needs to see their prompt reflected in the chat.
 
 **Important rules for background content:**
 - The wrapper `#fc-bg-layer` is `position:fixed; inset:0; z-index:0` — it already covers the whole page behind everything
