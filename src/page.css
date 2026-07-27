@@ -64,10 +64,9 @@ body {
 }
 
 /* ─── Chat viewport background layer ─────────────────────────────────── */
-/* Lives inside #chat-viewport so it only covers the chat area, never
-   the sidebar, topbar, or prompt bar */
 .chat-viewport {
-  position: relative;   /* establishes stacking context for #fc-bg-layer */
+  position: relative;
+  isolation: isolate;   /* proper stacking context so z-index works on children */
 }
 
 #fc-bg-layer {
@@ -76,17 +75,16 @@ body {
   z-index: 0;
   pointer-events: none !important;
   overflow: hidden;
-  isolation: isolate;
 }
 
 #fc-bg-layer * {
   pointer-events: none !important;
 }
 
-/* .chat sits above the background */
+/* .chat must be above the background layer */
 .chat {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 
 /* ─── App shell ───────────────────────────────────────────────────────── */
