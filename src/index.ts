@@ -1375,6 +1375,24 @@ function renderAppPage(options: {
         document.getElementById('sidebar').classList.remove('open');
         document.getElementById('sidebar-overlay').classList.remove('open');
       }
+
+      // Enforce opaque shell backgrounds — runs after every style injection
+      // Inline style always beats any stylesheet rule, even !important ones
+      const SHELL_BG = {
+        '.main-area':  'var(--bg, #06091a)',
+        '.sidebar':    'var(--surface-0, #080d20)',
+        '.topbar':     'var(--surface-0, #080d20)',
+        '.prompt-area':'var(--surface-0, #080d20)',
+      };
+      function lockShellBg() {
+        for (const [sel, bg] of Object.entries(SHELL_BG)) {
+          const el = document.querySelector(sel);
+          if (el) el.style.setProperty('background', bg, 'important');
+        }
+      }
+      lockShellBg();
+      // Re-lock after any DOM change (catches style marker injections)
+      new MutationObserver(lockShellBg).observe(document.head, { childList: true, subtree: true });
     </script>
     <script>${renderClientRuntime(options.chatId, options.clientId, options.clientSecret, options.history, options.connect ?? true, options.interceptSubmits ?? false, replay)}</script>
   </body>
