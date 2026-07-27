@@ -1378,27 +1378,39 @@ function renderAppPage(options: {
 
       // Enforce opaque shell backgrounds — runs after every style injection
       // Inline style always beats any stylesheet rule, even !important ones
-      const SHELL_BG = {
-        '.main-area':  'var(--bg, #06091a)',
-        '.sidebar':    'var(--surface-0, #080d20)',
-        '.topbar':     'var(--surface-0, #080d20)',
-        '.prompt-area':'var(--surface-0, #080d20)',
-      };
       function lockShellBg() {
-        // Lock shell elements
-        for (const [sel, bg] of Object.entries(SHELL_BG)) {
-          const el = document.querySelector(sel);
-          if (el) {
-            el.style.setProperty('background', bg, 'important');
-            el.style.setProperty('background-image', 'none', 'important');
-          }
+        var BG  = '#06091a';
+        var S0  = '#080d20';
+        function pin(sel, color) {
+          var el = document.querySelector(sel);
+          if (!el) return;
+          el.style.setProperty('background',       color,  'important');
+          el.style.setProperty('background-image', 'none', 'important');
+          el.style.setProperty('background-color', color,  'important');
         }
-        // Nuke any background set on body — backgrounds belong in #fc-bg-layer only
+        pin('.app-shell',   BG);
+        pin('.main-area',   BG);
+        pin('.sidebar',     S0);
+        pin('.topbar',      S0);
+        pin('.prompt-area', S0);
+        // Lock html and body so model can't use them as backgrounds
+        document.documentElement.style.setProperty('background', BG, 'important');
+        document.documentElement.style.setProperty('background-image', 'none', 'important');
+        document.body.style.setProperty('background', BG, 'important');
         document.body.style.setProperty('background-image', 'none', 'important');
-        document.body.style.setProperty('background-color', 'var(--bg, #06091a)', 'important');
+        // Remove any rogue fixed/absolute full-page divs injected outside #fc-bg-layer
+        document.querySelectorAll('body > div:not(.app-shell):not(#fc-bg-layer):not([id^="fc-"])').forEach(function(el) {
+          var s = window.getComputedStyle(el);
+          if ((s.position === 'fixed' || s.position === 'absolute') && s.zIndex > 0) {
+            el.style.setProperty('z-index', '-1', 'important');
+            el.style.setProperty('pointer-events', 'none', 'important');
+          }
+        });
       }
       lockShellBg();
-      new MutationObserver(lockShellBg).observe(document.head, { childList: true, subtree: true });
+      var _bgObserver = new MutationObserver(lockShellBg);
+      _bgObserver.observe(document.head, { childList: true, subtree: true });
+      _bgObserver.observe(document.body, { childList: true, attributes: true, attributeFilter: ['style'] });
     </script>
     <script>${renderClientRuntime(options.chatId, options.clientId, options.clientSecret, options.history, options.connect ?? true, options.interceptSubmits ?? false, replay)}</script>
   </body>

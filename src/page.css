@@ -94,6 +94,8 @@ body {
   min-height: 100dvh;
   position: relative;
   z-index: 1;
+  background: var(--bg) !important;
+  background-image: none !important;
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
