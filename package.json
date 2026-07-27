@@ -1,0 +1,26 @@
+{
+	"name": "flowchat",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy:alpha": "wrangler deploy --env alpha",
+		"deploy:production": "wrangler deploy --env production",
+		"dev": "wrangler dev --ip 0.0.0.0",
+		"dev:secure": "bash scripts/dev-secure.sh",
+		"dev:tunnel": "bash scripts/dev-secure.sh --tunnel",
+		"db:migrate:local": "wrangler d1 migrations apply flowchat-auth-local --local",
+		"db:migrate:alpha": "wrangler d1 migrations apply flowchat-auth-alpha --env alpha --remote",
+		"db:migrate:production": "wrangler d1 migrations apply flowchat-auth-production --env production --remote",
+		"start": "wrangler dev --ip 0.0.0.0",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"@types/node": "^25.9.1",
+		"typescript": "^5.5.2",
+		"wrangler": "^4.95.0"
+	},
+	"dependencies": {
+		"better-auth": "^1.6.14",
+		"kysely": "^0.28.17"
+	}
+}

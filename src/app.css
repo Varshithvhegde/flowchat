@@ -1,0 +1,98 @@
+/* Inline form controls inside AI agent bubbles */
+.message-agent form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.message-agent input[type="text"],
+.message-agent input[type="email"],
+.message-agent input[type="number"],
+.message-agent input[type="password"],
+.message-agent select,
+.message-agent textarea {
+  background: #0a0f25;
+  border: 1.5px solid #1c2645;
+  border-radius: 8px;
+  color: #e8edf8;
+  font: 14px/1.5 inherit;
+  padding: 8px 12px;
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+}
+
+.message-agent input:focus,
+.message-agent select:focus,
+.message-agent textarea:focus {
+  border-color: #5b6ef5;
+  box-shadow: 0 0 0 3px rgba(91,110,245,0.15);
+}
+
+.message-agent label {
+  font-size: 12.5px;
+  font-weight: 550;
+  color: #8692b4;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.message-agent button[type="submit"],
+.message-agent .btn-primary {
+  background: #5b6ef5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font: 600 13px/1 inherit;
+  cursor: pointer;
+  transition: background 0.12s, transform 0.08s, box-shadow 0.12s;
+  box-shadow: 0 2px 8px rgba(91,110,245,0.3);
+  align-self: flex-start;
+}
+.message-agent button[type="submit"]:hover,
+.message-agent .btn-primary:hover {
+  background: #4a5de4;
+  box-shadow: 0 2px 12px rgba(91,110,245,0.45);
+}
+.message-agent button[type="submit"]:active { transform: scale(0.96); }
+
+/* App panels for richer AI content */
+.app-panel {
+  background: #0a0f25;
+  border: 1px solid #1c2645;
+  border-radius: 12px;
+  padding: 16px;
+  margin: 8px 0;
+}
+
+/* Status badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.badge-blue   { background: rgba(91,110,245,0.12);  color: #818cf8; }
+.badge-green  { background: rgba(16,185,129,0.12);  color: #34d399; }
+.badge-red    { background: rgba(239,68,68,0.12);   color: #f87171; }
+.badge-yellow { background: rgba(245,158,11,0.12);  color: #fbbf24; }
+.badge-purple { background: rgba(167,139,250,0.12); color: #a78bfa; }
+
+/* Game cells — prevent text wrapping in TTT / grid games */
+.ttt-cell, .game-cell {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+/* Progress bar */
+.progress-bar { height: 4px; background: #1c2645; border-radius: 2px; overflow: hidden; }
+.progress-bar-fill { height: 100%; background: #5b6ef5; border-radius: 2px; transition: width 0.3s; }

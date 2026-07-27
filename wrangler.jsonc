@@ -1,0 +1,99 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "flowchat",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-05-28",
+  "workers_dev": true,
+  "vars": {
+    "EMAIL_FROM": "noreply@flowchat.app",
+    "EMAIL_FROM_NAME": "FlowChat",
+    "BROWSER_RATE_LIMIT": true,
+    "IP_RATE_LIMIT": true,
+    "PROMPT_MAX_CHARACTERS": 20000,
+    "VERIFY_EMAIL": false,
+    // "MODEL_PROVIDER": "gemini-direct",
+    // "GEMINI_MODEL": "gemini-3-flash-preview",
+    // "MODEL_PROVIDER": "inception-direct",
+    // "INCEPTION_MODEL": "mercury-2",
+    // Local secrets go in .dev.vars
+  },
+  "send_email": [
+    { "name": "EMAIL", "remote": true }
+  ],
+  "rules": [
+    { "type": "Text", "globs": ["**/*.css", "**/*.html", "**/*.md"], "fallthrough": true }
+  ],
+  "migrations": [
+    { "new_sqlite_classes": ["FlowChat"], "tag": "v1" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "class_name": "FlowChat", "name": "FLOW_CHAT" }
+    ]
+  },
+  "d1_databases": [
+    {
+      "binding": "AUTH_DB",
+      "database_name": "flowchat-auth-local",
+      "database_id": "local-flowchat-auth"
+    }
+  ],
+  "ai": { "binding": "AI" },
+  "observability": { "enabled": true },
+  "upload_source_maps": true,
+  "compatibility_flags": ["nodejs_compat"],
+  "env": {
+    "alpha": {
+      "workers_dev": false,
+      "routes": [{ "pattern": "alpha.flowchat.app", "custom_domain": true }],
+      "vars": {
+        "AUTH_PROVIDERS": ["GOOGLE", "GITHUB", "EMAIL_PASSWORD"],
+        "BETTER_AUTH_URL": "https://alpha.flowchat.app",
+        "EMAIL_FROM": "noreply@flowchat.app",
+        "EMAIL_FROM_NAME": "FlowChat",
+        "BROWSER_RATE_LIMIT": true,
+        "IP_RATE_LIMIT": true,
+        "PROMPT_MAX_CHARACTERS": 20000,
+        "VERIFY_EMAIL": true
+      },
+      "send_email": [{ "name": "EMAIL" }],
+      "durable_objects": {
+        "bindings": [{ "class_name": "FlowChat", "name": "FLOW_CHAT" }]
+      },
+      "d1_databases": [
+        {
+          "binding": "AUTH_DB",
+          "database_name": "flowchat-auth-alpha",
+          "database_id": "00000000-0000-0000-0000-000000000001"
+        }
+      ],
+      "ai": { "binding": "AI" }
+    },
+    "production": {
+      "workers_dev": false,
+      "routes": [{ "pattern": "flowchat.app", "custom_domain": true }],
+      "vars": {
+        "AUTH_PROVIDERS": ["GOOGLE", "GITHUB", "EMAIL_PASSWORD"],
+        "BETTER_AUTH_URL": "https://flowchat.app",
+        "EMAIL_FROM": "noreply@flowchat.app",
+        "EMAIL_FROM_NAME": "FlowChat",
+        "BROWSER_RATE_LIMIT": true,
+        "IP_RATE_LIMIT": true,
+        "PROMPT_MAX_CHARACTERS": 3000,
+        "VERIFY_EMAIL": false
+      },
+      "send_email": [{ "name": "EMAIL" }],
+      "durable_objects": {
+        "bindings": [{ "class_name": "FlowChat", "name": "FLOW_CHAT" }]
+      },
+      "d1_databases": [
+        {
+          "binding": "AUTH_DB",
+          "database_name": "flowchat-auth-production",
+          "database_id": "00000000-0000-0000-0000-000000000002"
+        }
+      ],
+      "ai": { "binding": "AI" }
+    }
+  }
+}

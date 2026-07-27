@@ -1,0 +1,202 @@
+<?marker name="/style/layout-overrides">
+<?marker name="/style/chat-overrides">
+<?marker name="/style/chat-color-overrides">
+<?marker name="/style/prompt-box-overrides">
+<?marker name="/layout/before">
+
+<div class="chat-viewport" id="chat-viewport">
+  <div class="chat" id="chat-messages">
+    <?marker name="/chat/before">
+    <div class="welcome" id="chat-welcome">
+      <div class="welcome-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <h2>What do you want to build?</h2>
+      <p>FlowChat generates live HTML — games, dashboards, forms, apps — all running right here in the chat.</p>
+      <div class="suggestion-grid">
+        <button class="suggestion-card" onclick="fillAndSend('Build me a playable Tic Tac Toe game')">
+          Tic Tac Toe
+          <small>Two-player game with board</small>
+        </button>
+        <button class="suggestion-card" onclick="fillAndSend('Create a live data dashboard with animated charts showing random metrics')">
+          Data dashboard
+          <small>Charts, stats, live updates</small>
+        </button>
+        <button class="suggestion-card" onclick="fillAndSend('Make a color palette generator with interactive swatches')">
+          Color palette tool
+          <small>Pick, generate, copy</small>
+        </button>
+        <button class="suggestion-card" onclick="fillAndSend('Build a minimal markdown editor with live preview')">
+          Markdown editor
+          <small>Write &amp; preview side-by-side</small>
+        </button>
+      </div>
+    </div>
+    <?marker name="/chat/append-message">
+  </div>
+</div>
+
+<?start name="/chat/prompt-box">
+<div class="prompt-area">
+  <div class="prompt-inner">
+    <form class="prompt-box" id="prompt-form" method="post" action="/c/PpqUtcLGQdYN4oqc:CHAT_ID/prompt" target="hidden-submit-frame">
+      <input hidden name="clientId" value="PpqUtcLGQdYN4oqc:CLIENT_ID" />
+      <input hidden name="clientSecret" value="PpqUtcLGQdYN4oqc:CLIENT_SECRET" />
+      <?start name="/chat/prompt">
+        <textarea
+          class="prompt-textarea"
+          name="prompt"
+          placeholder="Message FlowChat…"
+          rows="1"
+          id="prompt-textarea"
+          onkeydown="if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.form?.requestSubmit(); }"
+        ></textarea>
+      <?end>
+      <div class="prompt-actions">
+        <button type="submit" class="prompt-send" id="prompt-send-btn" title="Send (Enter)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </form>
+    <p class="prompt-hint">Enter to send · Shift+Enter for newline</p>
+  </div>
+</div>
+<?end>
+
+<iframe name="hidden-submit-frame" id="hidden-submit-frame" hidden></iframe>
+
+<script>
+(function() {
+  var form = document.getElementById('prompt-form');
+  var sendBtn = document.getElementById('prompt-send-btn');
+  var typingEl = null;
+  var clientIdVal = form ? form.elements.namedItem('clientId')?.value : '0';
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function getChat() { return document.getElementById('chat-messages'); }
+
+  function scrollBottom() {
+    var vp = document.getElementById('chat-viewport');
+    if (vp) vp.scrollTop = vp.scrollHeight;
+    else document.documentElement.scrollTop = document.documentElement.scrollHeight;
+  }
+
+  function showTyping() {
+    if (typingEl) return;
+    var chat = getChat();
+    if (!chat) return;
+    typingEl = document.createElement('div');
+    typingEl.className = 'typing-indicator';
+    typingEl.id = 'fc-typing';
+    typingEl.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+    chat.appendChild(typingEl);
+    scrollBottom();
+  }
+
+  function hideTyping() {
+    if (typingEl) { typingEl.remove(); typingEl = null; }
+    var old = document.getElementById('fc-typing');
+    if (old) old.remove();
+  }
+
+  // Hide typing indicator when AI response arrives
+  var _origDispatch = null;
+  var dispatchInterceptInstalled = false;
+  function installDispatchIntercept() {
+    if (dispatchInterceptInstalled || !window.partialupdates) return;
+    dispatchInterceptInstalled = true;
+    var orig = window.partialupdates.dispatch;
+    window.partialupdates.dispatch = function(event) {
+      hideTyping();
+      return orig(event);
+    };
+  }
+
+  // Also intercept iframe load (fires when 204 comes back = server accepted)
+  var iframe = document.getElementById('hidden-submit-frame');
+  if (iframe) {
+    iframe.addEventListener('load', function() {
+      // Server got it — now just wait for WS to bring back result
+      // typing indicator stays until dispatch fires
+    });
+  }
+
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      var ta = document.getElementById('prompt-textarea');
+      if (!(ta instanceof HTMLTextAreaElement)) return;
+      var text = ta.value.trim();
+      if (!text) { e.preventDefault(); return; }
+
+      // Fix any relative action URLs (LLM might write c/ instead of /c/)
+      var action = form.getAttribute('action') || '';
+      if (action && !action.startsWith('/') && !action.startsWith('http')) {
+        form.setAttribute('action', '/' + action);
+      }
+
+      // Hide welcome
+      var welcome = document.getElementById('chat-welcome');
+      if (welcome) welcome.style.display = 'none';
+
+      // Optimistic user bubble
+      var chat = getChat();
+      if (chat) {
+        var bubble = document.createElement('div');
+        bubble.className = 'message message-user optimistic';
+        bubble.dataset.clientId = clientIdVal || '0';
+        bubble.textContent = text;
+        bubble.id = 'fc-optimistic-' + Date.now();
+
+        // Insert before the /chat/append-message marker
+        var marker = null;
+        var walker = document.createTreeWalker(chat, NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_PROCESSING_INSTRUCTION);
+        while (walker.nextNode()) {
+          var node = walker.currentNode;
+          var txt = node.nodeType === Node.COMMENT_NODE ? node.data : ('?' + node.target + (node.data ? ' ' + node.data : ''));
+          if (/\bname\s*=\s*["']?\/chat\/append-message["']?/.test(txt)) {
+            marker = node; break;
+          }
+        }
+        if (marker && marker.parentNode === chat) {
+          chat.insertBefore(bubble, marker);
+        } else {
+          chat.appendChild(bubble);
+        }
+        scrollBottom();
+      }
+
+      // Show typing indicator
+      setTimeout(showTyping, 80);
+
+      // Defer clear so browser collects form data before we wipe the textarea
+      setTimeout(function() { ta.value = ''; ta.style.height = ''; }, 0);
+
+      // Install intercept for when the WS response arrives
+      setTimeout(function() { installDispatchIntercept(); }, 200);
+
+      // Safety: if no response in 30s, remove typing
+      setTimeout(function() { hideTyping(); }, 30000);
+    });
+  }
+
+  function fillPrompt(text) {
+    var ta = document.getElementById('prompt-textarea');
+    if (!ta) return;
+    ta.value = text;
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+    ta.focus();
+  }
+
+  function fillAndSend(text) {
+    fillPrompt(text);
+    var f = document.getElementById('prompt-form');
+    if (f) setTimeout(function() { f.requestSubmit(); }, 50);
+  }
+
+  window.fillPrompt = fillPrompt;
+  window.fillAndSend = fillAndSend;
+})();
+</script>
