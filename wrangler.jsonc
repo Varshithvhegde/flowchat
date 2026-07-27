@@ -43,6 +43,29 @@
   "upload_source_maps": true,
   "compatibility_flags": ["nodejs_compat"],
   "env": {
+    "public": {
+      "workers_dev": true,
+      "vars": {
+        "BROWSER_RATE_LIMIT": true,
+        "IP_RATE_LIMIT": true,
+        "PROMPT_MAX_CHARACTERS": 4000,
+        "VERIFY_EMAIL": false
+      },
+      "durable_objects": {
+        "bindings": [{ "class_name": "FlowChat", "name": "FLOW_CHAT" }]
+      },
+      "d1_databases": [
+        {
+          "binding": "AUTH_DB",
+          "database_name": "flowchat-auth-public",
+          "database_id": "e6f7f7c8-5bd0-4d70-9598-96c60c37fa6f"
+        }
+      ],
+      "ai": { "binding": "AI" },
+      "migrations": [
+        { "new_sqlite_classes": ["FlowChat"], "tag": "v1" }
+      ]
+    },
     "alpha": {
       "workers_dev": false,
       "routes": [{ "pattern": "alpha.flowchat.app", "custom_domain": true }],
