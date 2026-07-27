@@ -1640,12 +1640,33 @@ function renderClientRuntime(
   }
 
   // Normalize any form action the LLM writes without a leading slash
+  // Also show typing indicator for in-chat form submissions (TTT moves etc.)
   document.addEventListener("submit", (event) => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
     const action = form.getAttribute("action") || "";
     if (action && !action.startsWith("/") && !action.startsWith("http")) {
       form.setAttribute("action", "/" + action);
+    }
+    // Show typing for any form that targets the hidden frame (game moves etc.)
+    if (form.target === "hidden-submit-frame" && form.id !== "prompt-form") {
+      const typing = document.getElementById("fc-typing");
+      if (!typing) {
+        const chat = document.getElementById("chat-messages");
+        if (chat) {
+          const t = document.createElement("div");
+          t.className = "typing-indicator";
+          t.id = "fc-typing";
+          t.innerHTML = "<div class='typing-dot'></div><div class='typing-dot'></div><div class='typing-dot'></div>";
+          chat.appendChild(t);
+          const vp = document.getElementById("chat-viewport");
+          if (vp) vp.scrollTop = vp.scrollHeight;
+        }
+      }
+      setTimeout(() => {
+        const t = document.getElementById("fc-typing");
+        if (t) t.remove();
+      }, 30000);
     }
   }, true);
 
