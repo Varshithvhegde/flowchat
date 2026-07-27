@@ -1293,10 +1293,11 @@ function renderAppPage(options: {
     <title>${escapeHtml(options.title)}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..800;1,14..32,300..800&display=swap" rel="stylesheet" /></noscript>
     <script>${renderClientSessionRedirect(options.chatId)}</script>
-    <script src="https://unpkg.com/html-setters-polyfill"></script>
-    <script src="https://unpkg.com/template-for-polyfill"></script>
+    <script src="https://unpkg.com/html-setters-polyfill" async></script>
+    <script src="https://unpkg.com/template-for-polyfill" async></script>
     <style>${pageStyles}</style>
     <style>${appStyles}</style>
     ${options.hidePrompt ? "<style>.prompt-area{display:none!important}</style>" : ""}
