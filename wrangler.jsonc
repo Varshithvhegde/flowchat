@@ -7,8 +7,8 @@
   "vars": {
     "EMAIL_FROM": "noreply@flowchat.app",
     "EMAIL_FROM_NAME": "FlowChat",
-    "BROWSER_RATE_LIMIT": true,
-    "IP_RATE_LIMIT": true,
+    "BROWSER_RATE_LIMIT": false,
+    "IP_RATE_LIMIT": false,
     "PROMPT_MAX_CHARACTERS": 20000,
     "VERIFY_EMAIL": false,
     // "MODEL_PROVIDER": "gemini-direct",

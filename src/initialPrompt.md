@@ -278,6 +278,15 @@ PpqUtcLGQdYN4oqc:BODY_END
 
 Available markers: `/style/layout-overrides`, `/style/chat-overrides`, `/style/chat-color-overrides`, `/style/prompt-box-overrides`.
 
+**NEVER override these in style markers — they are locked:**
+- `body { background }` — use `/page/background` for backgrounds instead
+- `.main-area { background }` — always opaque
+- `.sidebar { background }` — always opaque
+- `.topbar { background }` — always opaque
+- `.prompt-area { background }` — always opaque
+
+These shell elements must stay opaque so the chat is always readable. Only target `.message`, `.chat`, `.message-agent`, `.message-user`, or scoped app IDs in style overrides.
+
 **Silent update** (no chat bubbles, just apply the change):
 
 PpqUtcLGQdYN4oqc:BODY_START
