@@ -92,8 +92,6 @@ body {
   min-height: 100dvh;
   position: relative;
   z-index: 1;
-  background: var(--bg) !important;
-  background-image: none !important;
 }
 
 /* ─── Sidebar ─────────────────────────────────────────────────────────── */
@@ -212,8 +210,6 @@ body {
 }
 
 /* ─── Main area ───────────────────────────────────────────────────────── */
-/* !important locks prevent the model's style overrides from making
-   critical shell elements transparent and revealing the background layer */
 .main-area {
   flex: 1;
   display: flex;
@@ -221,19 +217,7 @@ body {
   min-width: 0;
   height: 100dvh;
   overflow: hidden;
-  background: var(--bg) !important;
-}
-
-.sidebar {
-  background: var(--surface-0) !important;
-}
-
-.topbar {
-  background: var(--surface-0) !important;
-}
-
-.prompt-area {
-  background: var(--surface-0) !important;
+  background: var(--bg);
 }
 
 /* ─── Topbar ──────────────────────────────────────────────────────────── */

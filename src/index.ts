@@ -1379,40 +1379,8 @@ function renderAppPage(options: {
 
       // Enforce opaque shell backgrounds — runs after every style injection
       // Inline style always beats any stylesheet rule, even !important ones
-      var _bgLocking = false;
-      function lockShellBg() {
-        if (_bgLocking) return;
-        _bgLocking = true;
-        try {
-          var BG = '#06091a';
-          var S0 = '#080d20';
-          function pin(sel, color) {
-            var el = document.querySelector(sel);
-            if (!el) return;
-            el.style.setProperty('background', color, 'important');
-            el.style.setProperty('background-image', 'none', 'important');
-          }
-          pin('.app-shell',   BG);
-          pin('.main-area',   BG);
-          pin('.sidebar',     S0);
-          pin('.topbar',      S0);
-          pin('.prompt-area', S0);
-          document.documentElement.style.setProperty('background', BG, 'important');
-          document.documentElement.style.setProperty('background-image', 'none', 'important');
-          document.body.style.setProperty('background', BG, 'important');
-          document.body.style.setProperty('background-image', 'none', 'important');
-        } finally {
-          _bgLocking = false;
-        }
-      }
-      lockShellBg();
-      // Only watch head for new <style> tags — avoids triggering on every style attribute change
-      new MutationObserver(function(mutations) {
-        var hasStyle = mutations.some(function(m) {
-          return Array.from(m.addedNodes).some(function(n) { return n.nodeName === 'STYLE'; });
-        });
-        if (hasStyle) lockShellBg();
-      }).observe(document.head, { childList: true });
+      // No background enforcer — model is allowed to change shell transparency
+      // when the user wants a background image/animation to show through.
     </script>
     <script>${renderClientRuntime(options.chatId, options.clientId, options.clientSecret, options.history, options.connect ?? true, options.interceptSubmits ?? false, replay)}</script>
   </body>

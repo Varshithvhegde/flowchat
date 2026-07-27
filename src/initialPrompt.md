@@ -278,14 +278,18 @@ PpqUtcLGQdYN4oqc:BODY_END
 
 Available markers: `/style/layout-overrides`, `/style/chat-overrides`, `/style/chat-color-overrides`, `/style/prompt-box-overrides`.
 
-**NEVER override these in style markers — they are locked:**
-- `body { background }` — use `/page/background` for backgrounds instead
-- `.main-area { background }` — always opaque
-- `.sidebar { background }` — always opaque
-- `.topbar { background }` — always opaque
-- `.prompt-area { background }` — always opaque
+**When the user wants a background image/animation to show through the whole app:**
+Make the shell elements transparent so the background layer is visible:
 
-These shell elements must stay opaque so the chat is always readable. Only target `.message`, `.chat`, `.message-agent`, `.message-user`, or scoped app IDs in style overrides.
+```css
+.main-area, .sidebar, .topbar, .prompt-area { background: transparent !important; }
+```
+
+Send this via `/style/layout-overrides` alongside the `/page/background` update.
+
+**When the user wants a theme that keeps the default dark shell** (e.g. Barbie theme with pink accents but dark panels):
+Only restyle `.message`, `.message-agent`, `.message-user`, `.prompt-box`, `.topbar-btn`, etc.
+Do NOT make shell elements transparent unless the user explicitly wants a full background image.
 
 **Silent update** (no chat bubbles, just apply the change):
 
