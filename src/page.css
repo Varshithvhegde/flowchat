@@ -302,6 +302,23 @@ body {
   width: 100%;
 }
 
+/* Prevent user/system bubbles from being styled as if inside an agent bubble */
+.message-agent .message-user,
+.message-agent .message-system {
+  all: revert;
+  display: flex;
+  align-self: flex-end;
+  background: var(--bubble-user);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  font-size: 14px;
+  margin-top: 8px;
+  max-width: 100%;
+  word-break: break-word;
+}
+
 /* Ensure canvas/svg/img never overflow their bubble */
 .message canvas,
 .message svg:not([class*="icon"]),

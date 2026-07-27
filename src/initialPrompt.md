@@ -68,8 +68,40 @@ PpqUtcLGQdYN4oqc:BODY_END
 - **ALWAYS emit the user bubble** as the first element inside the template. Every single response must start with `<div class="message message-user" data-client-id="X">`. No exceptions.
 - Always include `data-client-id="clientId"` on user divs
 - Strip the `[clientId]:` prefix from visible text
-- Always preserve `<?marker name="/chat/append-message">` as the last item inside the template
+- **`<?marker name="/chat/append-message">` MUST be the absolute last thing inside the `<template>` tag** — after ALL closing divs. See the structure below.
 - The user bubble must come BEFORE the agent bubble — never after
+
+### CRITICAL: marker placement
+
+The marker tells the browser where to inject the next message. If you place it inside an app div, the next user message will be injected inside that div and corrupt the layout.
+
+**WRONG — marker inside app div:**
+```html
+<template for="/chat/append-message">
+  <div class="message message-user" data-client-id="1">hi</div>
+  <div class="message message-agent" id="msg-1">
+    <div id="my-app">
+      ...content...
+      <?marker name="/chat/append-message">   <!-- ❌ WRONG: inside app div -->
+    </div>
+  </div>
+</template>
+```
+
+**CORRECT — marker after all closing tags:**
+```html
+<template for="/chat/append-message">
+  <div class="message message-user" data-client-id="1">hi</div>
+  <div class="message message-agent" id="msg-1">
+    <div id="my-app">
+      ...content...
+    </div>
+  </div>
+  <?marker name="/chat/append-message">   <!-- ✅ CORRECT: after ALL divs close -->
+</template>
+```
+
+Count your closing `</div>` tags. The marker comes after the last one, as a sibling of the top-level message divs — never nested inside them.
 
 ---
 
@@ -206,29 +238,34 @@ Use instance numbers so multiple games/apps can coexist in the same chat:
 - `app/snake/1/...` for Snake
 - `app/chart/1/...` for a chart
 
-**Structure pattern:**
+**Structure pattern — note where the marker goes:**
 
 ```html
-<div class="message message-agent message-full-width" id="msg-agent-N">
-  <div id="APP_ID">
-    <?start name="app/TYPE/N/style">
-      <style>/* scoped to #APP_ID */</style>
-    <?end>
-    <?start name="app/TYPE/N/state">
-      <!-- current game/app state UI -->
-    <?end>
-    <form method="post" action="/c/PpqUtcLGQdYN4oqc:CHAT_ID/form" target="hidden-submit-frame">
-      <input hidden name="clientId" value="PpqUtcLGQdYN4oqc:CLIENT_ID" />
-      <input hidden name="clientSecret" value="PpqUtcLGQdYN4oqc:CLIENT_SECRET" />
-      <input hidden name="path" value="app/TYPE/N/action" />
-      <?start name="app/TYPE/N/controls">
-        <!-- buttons/inputs that can be updated independently -->
+<template for="/chat/append-message">
+  <div class="message message-user" data-client-id="CLIENT_ID">user text here</div>
+  <div class="message message-agent message-full-width" id="msg-agent-N">
+    <div id="APP_ID" style="min-height:300px;overflow:hidden">
+      <?start name="app/TYPE/N/style">
+        <style>/* scoped to #APP_ID */</style>
       <?end>
-    </form>
+      <?start name="app/TYPE/N/state">
+        <!-- current game/app state UI -->
+      <?end>
+      <form method="post" action="/c/PpqUtcLGQdYN4oqc:CHAT_ID/form" target="hidden-submit-frame">
+        <input hidden name="clientId" value="PpqUtcLGQdYN4oqc:CLIENT_ID" />
+        <input hidden name="clientSecret" value="PpqUtcLGQdYN4oqc:CLIENT_SECRET" />
+        <input hidden name="path" value="app/TYPE/N/action" />
+        <?start name="app/TYPE/N/controls">
+          <!-- buttons/inputs that can be updated independently -->
+        <?end>
+      </form>
+    </div>
   </div>
-</div>
-<?marker name="/chat/append-message">
+  <?marker name="/chat/append-message">
+</template>
 ```
+
+The marker is a sibling of the two `.message` divs, never nested inside either.
 
 This lets you surgically update just the state label, just one cell, or just the controls — without re-rendering the whole app.
 
