@@ -1379,39 +1379,40 @@ function renderAppPage(options: {
 
       // Enforce opaque shell backgrounds — runs after every style injection
       // Inline style always beats any stylesheet rule, even !important ones
+      var _bgLocking = false;
       function lockShellBg() {
-        var BG  = '#06091a';
-        var S0  = '#080d20';
-        function pin(sel, color) {
-          var el = document.querySelector(sel);
-          if (!el) return;
-          el.style.setProperty('background',       color,  'important');
-          el.style.setProperty('background-image', 'none', 'important');
-          el.style.setProperty('background-color', color,  'important');
-        }
-        pin('.app-shell',   BG);
-        pin('.main-area',   BG);
-        pin('.sidebar',     S0);
-        pin('.topbar',      S0);
-        pin('.prompt-area', S0);
-        // Lock html and body so model can't use them as backgrounds
-        document.documentElement.style.setProperty('background', BG, 'important');
-        document.documentElement.style.setProperty('background-image', 'none', 'important');
-        document.body.style.setProperty('background', BG, 'important');
-        document.body.style.setProperty('background-image', 'none', 'important');
-        // Remove any rogue fixed/absolute full-page divs injected outside #fc-bg-layer
-        document.querySelectorAll('body > div:not(.app-shell):not(#fc-bg-layer):not([id^="fc-"])').forEach(function(el) {
-          var s = window.getComputedStyle(el);
-          if ((s.position === 'fixed' || s.position === 'absolute') && s.zIndex > 0) {
-            el.style.setProperty('z-index', '-1', 'important');
-            el.style.setProperty('pointer-events', 'none', 'important');
+        if (_bgLocking) return;
+        _bgLocking = true;
+        try {
+          var BG = '#06091a';
+          var S0 = '#080d20';
+          function pin(sel, color) {
+            var el = document.querySelector(sel);
+            if (!el) return;
+            el.style.setProperty('background', color, 'important');
+            el.style.setProperty('background-image', 'none', 'important');
           }
-        });
+          pin('.app-shell',   BG);
+          pin('.main-area',   BG);
+          pin('.sidebar',     S0);
+          pin('.topbar',      S0);
+          pin('.prompt-area', S0);
+          document.documentElement.style.setProperty('background', BG, 'important');
+          document.documentElement.style.setProperty('background-image', 'none', 'important');
+          document.body.style.setProperty('background', BG, 'important');
+          document.body.style.setProperty('background-image', 'none', 'important');
+        } finally {
+          _bgLocking = false;
+        }
       }
       lockShellBg();
-      var _bgObserver = new MutationObserver(lockShellBg);
-      _bgObserver.observe(document.head, { childList: true, subtree: true });
-      _bgObserver.observe(document.body, { childList: true, attributes: true, attributeFilter: ['style'] });
+      // Only watch head for new <style> tags — avoids triggering on every style attribute change
+      new MutationObserver(function(mutations) {
+        var hasStyle = mutations.some(function(m) {
+          return Array.from(m.addedNodes).some(function(n) { return n.nodeName === 'STYLE'; });
+        });
+        if (hasStyle) lockShellBg();
+      }).observe(document.head, { childList: true });
     </script>
     <script>${renderClientRuntime(options.chatId, options.clientId, options.clientSecret, options.history, options.connect ?? true, options.interceptSubmits ?? false, replay)}</script>
   </body>
