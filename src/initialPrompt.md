@@ -238,7 +238,12 @@ PpqUtcLGQdYN4oqc:BODY_START
 </template>
 PpqUtcLGQdYN4oqc:BODY_END
 
-**Important:** `#fc-page-bg` is already styled as `position:fixed; inset:0; z-index:0; pointer-events:none` — it covers the whole page behind everything. Just put your canvas or animated div inside it.
+**Important rules for background content:**
+- The wrapper `#fc-bg-layer` is `position:fixed; inset:0; z-index:0` — it already covers the whole page behind everything
+- Do NOT use `position:fixed` or `position:absolute` with a high `z-index` on elements inside the background — they are already inside a fixed layer
+- Do NOT set `z-index` greater than 1 on anything inside the background marker — it is isolated and cannot escape above the app
+- Use `position:absolute; inset:0` for canvas/div children, not `position:fixed`
+- Canvas should be `width:100%; height:100%; display:block` inside a `position:absolute; inset:0` container
 
 To **remove** a background, send an empty replacement:
 

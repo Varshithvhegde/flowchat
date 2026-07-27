@@ -66,11 +66,21 @@ body {
 }
 
 /* ─── Page background layer (behind entire app) ───────────────────────── */
-#fc-page-bg {
+/* fc-bg-layer is the stacking context. Everything inside it is isolated —
+   no z-index value the model emits can escape and cover the app shell. */
+#fc-bg-layer {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;      /* contains any z-index inside */
+}
+
+/* Convenience: model can use #fc-page-bg as a named inner container */
+#fc-page-bg {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
 }
 
