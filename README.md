@@ -4,7 +4,8 @@ A multi-user AI chat where the model responds with live HTML instead of markdown
 
 **Live demo:** https://flowchat-public.varshithvh.workers.dev
 
-![FlowChat screenshot](https://raw.githubusercontent.com/Varshithvhegde/flowchat/main/docs/screenshot.png)
+<img width="800" height="457" alt="image" src="https://github.com/user-attachments/assets/0e25c7ce-e127-4246-a011-22936fc3d722" />
+
 
 ---
 
